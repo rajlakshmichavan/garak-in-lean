@@ -32,5 +32,32 @@ theorem empty_conversation_has_no_turns
     (n : Nat) :
     (runConversation strategy respond n).turns.length = n := by
   induction n with
+
+-- Helper lemma: if detector fires at turn n within maxTurns,
+-- then EventuallyTriggers holds
+theorem triggers_at_n
+    (strategy : AtkgenStrategy)
+    (respond : Probe → Response)
+    (detector : Detector)
+    (maxTurns n : Nat)
+    (hn : n ≤ maxTurns)
+    (hfire : detector.fn (respond (strategy
+        (runConversation strategy respond n))) ≥ 0.5) :
+    EventuallyTriggers strategy respond detector maxTurns := by
+  exact ⟨n, hn, hfire⟩
+
+-- Main theorem: if there exists an attackable turn,
+-- atkgen eventually triggers the detector
+theorem eventually_triggers
+    (strategy : AtkgenStrategy)
+    (respond : Probe → Response)
+    (detector : Detector)
+    (maxTurns : Nat)
+    -- This assumption says: the target IS attackable within maxTurns
+    (attackable : ∃ n ≤ maxTurns,
+        detector.fn (respond (strategy
+            (runConversation strategy respond n))) ≥ 0.5) :
+    EventuallyTriggers strategy respond detector maxTurns := by
+  exact attackable
   | zero => simp [runConversation]
   | succ n ih => simp [runConversation, ih]
