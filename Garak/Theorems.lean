@@ -22,3 +22,12 @@ theorem empty_conversation_has_no_turns
     (respond : Probe → Response) :
     (runConversation strategy respond 0).turns = [] := by
   simp [runConversation]
+
+ theorem conversation_length
+    (strategy : AtkgenStrategy)
+    (respond : Probe → Response)
+    (n : Nat) :
+    (runConversation strategy respond n).turns.length = n := by
+  induction n with
+  | zero => simp [runConversation]
+  | succ n ih => simp [runConversation, ih]
