@@ -8,6 +8,7 @@ import Garak.Atkgen
 -- Theorem 1: A conversation grows monotonically
 -- i.e. running for n+1 turns always produces
 -- a longer conversation than n turns
+-- Running a conversation for n+1 turns gives you exactly one more turn than running it for n turns.
 theorem conversation_grows
     (strategy : AtkgenStrategy)
     (respond : Probe → Response)
@@ -17,13 +18,15 @@ theorem conversation_grows
   simp [runConversation]
 
 -- Theorem 2: An empty conversation has no turns
+-- Running a conversation for 0 turns gives you an empty conversation.
 theorem empty_conversation_has_no_turns
     (strategy : AtkgenStrategy)
     (respond : Probe → Response) :
     (runConversation strategy respond 0).turns = [] := by
   simp [runConversation]
 
- theorem conversation_length
+  -- Theorem 3: After n turns, the conversation has exactly n turns in it.
+  theorem conversation_length
     (strategy : AtkgenStrategy)
     (respond : Probe → Response)
     (n : Nat) :
