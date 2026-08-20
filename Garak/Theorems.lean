@@ -25,21 +25,15 @@ theorem empty_conversation_has_no_turns
     (runConversation strategy respond 0).turns = [] := by
   simp [runConversation]
 
-<<<<<<< HEAD
-
-  -- Theorem 3: Conversation length is exactly n after n turns
+-- Theorem 3: After n turns, the conversation has exactly n turns in it.
 theorem conversation_length
-=======
-  -- Theorem 3: After n turns, the conversation has exactly n turns in it.
-  theorem conversation_length
->>>>>>> 3c80367e527148787c9ede2ca4d72630b89a0b85
     (strategy : AtkgenStrategy)
     (respond : Probe → Response)
     (n : Nat) :
     (runConversation strategy respond n).turns.length = n := by
   induction n with
-<<<<<<< HEAD
-=======
+  | zero => simp [runConversation]
+  | succ n ih => simp [runConversation, ih]
 
 -- Helper lemma: if detector fires at turn n within maxTurns,
 -- then EventuallyTriggers holds
@@ -67,6 +61,3 @@ theorem eventually_triggers
             (runConversation strategy respond n))) ≥ 0.5) :
     EventuallyTriggers strategy respond detector maxTurns := by
   exact attackable
->>>>>>> 3c80367e527148787c9ede2ca4d72630b89a0b85
-  | zero => simp [runConversation]
-  | succ n ih => simp [runConversation, ih]

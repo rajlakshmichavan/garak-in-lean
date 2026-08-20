@@ -1,4 +1,3 @@
--- Impossibility.lean
 -- Toward: no sound guardrail can be complete.
 
 import Mathlib          -- if slow, narrow later to Finset.Card / Finset.Image
@@ -22,7 +21,6 @@ theorem no_finite_checker_is_complete
   have h1 : Adversarial.card ≤ (Signatures.image catches).card := Finset.card_le_card hsub
   have h2 : (Signatures.image catches).card ≤ Signatures.card := Finset.card_image_le
   omega
-  -- if `Finset.card_le_card` errors, your mathlib may want `Finset.card_le_of_subset`
 
 -- (2) CONDITIONAL (proved). If any blocked attack can be extended into a NEW
 -- attack that evades the checker, then no checker is complete.
@@ -41,10 +39,9 @@ theorem no_complete_checker_if_evadable
     · exact h
     · exact absurd h hb
 
--- (3) THE REAL TARGET (sorry — this is the work to do with the professor).
+-- (3) THE REAL TARGET
 -- No checker can be BOTH sound and complete over a rich enough prompt space.
 -- `hrich` is a placeholder for that richness assumption — deciding its right
--- form is question #2 for tomorrow. Discharging the proof needs the
 -- incompressibility / diagonalization argument (Vassilev 2025).
 theorem no_sound_and_complete_checker
     (c : Checker) (policy : Policy)

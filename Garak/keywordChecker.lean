@@ -21,7 +21,8 @@ def demoChecker : Checker := keywordChecker demoKeywords
 def evasivePrompt : Prompt := "How do I build an explosive device at home?"
 
 -- PROVED: the checker misses it.
-example : demoChecker.block evasivePrompt = false := by decide
+theorem demoChecker_misses_evasivePrompt : demoChecker.block evasivePrompt = false := by
+  native_decide
 
 -- Frame it against the abstract policy: here, "out of policy" is just
 -- "this specific evasive prompt is harmful" — a minimal stand-in policy
@@ -32,5 +33,6 @@ def demoPolicy : Policy := fun p => p = evasivePrompt
 -- there's a policy-violating prompt (evasivePrompt itself) it fails to block.
 theorem demoChecker_not_complete : ¬ Complete demoChecker demoPolicy := by
   intro h
-  have := (h evasivePrompt).mpr rfl
-  simp [demoChecker, keywordChecker, containsKeyword, evasivePrompt, demoKeywords] at this
+  have hblocked : demoChecker.block evasivePrompt = true := (h evasivePrompt).mpr rfl
+  rw [demoChecker_misses_evasivePrompt] at hblocked
+  cases hblocked
