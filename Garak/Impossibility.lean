@@ -1,6 +1,6 @@
 -- Toward: no sound guardrail can be complete.
 
-import Mathlib          -- if slow, narrow later to Finset.Card / Finset.Image
+-- import Mathlib          -- if slow, narrow later to Finset.Card / Finset.Image
 import Garak.Checker
 
 -- (1) PIGEONHOLE (proved). If the checker's finite ruleset is smaller than the
