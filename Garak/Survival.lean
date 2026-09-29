@@ -1,11 +1,13 @@
 /-
   Survival.lean
-  Deterministic backbone for Theorem 2 (no probability appears here).
+  Deterministic backbone for Theorems 2 and 3 (no probability appears here).
 
-  Contents (every declaration below is used by Process.lean or Theorem2.lean):
-    * geom_bound                     geometric decay of a contracting sequence
-    * geom_tail_sum                  the geometric series  ∑ₜ N(1-ε)ᵗ = N/ε
-    * exists_common_time_of_eventually   finite max of per-item "eventually" times
+  Contents (every declaration below is used by Process.lean, Theorem2.lean, or
+  Theorem3.lean):
+    * geom_bound                       geometric decay of a contracting sequence
+    * geom_tail_sum                    the geometric series  ∑ₜ N(1-ε)ᵗ = N/ε
+    * exists_common_time               Proposition 1 (finite max of witness times)
+    * exists_common_time_of_eventually the "eventually" variant used by Theorem 2
 -/
 import Mathlib
 
@@ -41,6 +43,17 @@ theorem geom_tail_sum (N ε : ℝ) (hN : 0 ≤ N) (h0 : 0 < ε) (h1 : ε ≤ 1) 
   rw [tsum_mul_left, tsum_geometric_of_lt_one hr0 hr1]
   have h : (1 - (1 - ε)) = ε := by ring
   rw [h, div_eq_mul_inv]
+
+/-- **Proposition 1.** A monotone family of covered sets that eventually covers
+every element of a finite set `S` covers all of `S` at one common time `T` (the
+max of the witness times). Purely deterministic; used by Corollary 4. -/
+theorem exists_common_time {X : Type*} (D : ℕ → Set X) (hmono : Monotone D)
+    (S : Set X) (hS : S.Finite) (h : ∀ x ∈ S, ∃ t, x ∈ D t) :
+    ∃ T, ∀ x ∈ S, x ∈ D T := by
+  classical
+  choose! t ht using h
+  refine ⟨hS.toFinset.sup t, fun x hx => ?_⟩
+  exact hmono (Finset.le_sup (hS.mem_toFinset.mpr hx)) (ht x hx)
 
 /-- If every item of a finite type is covered from some round onward, then one
 common round `T` covers all of them (the max of the per-item times). This is the
