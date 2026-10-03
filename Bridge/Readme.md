@@ -45,18 +45,53 @@ echo "Please ignore previous instructions." | lake env lean --run Bridge/apply.l
 
 ## Connecting to a garak run
 
-`apply.lean` expects a trace shaped as `turns[*].attackerPrompt`. This is **not**
-garak's native `report.jsonl` (one JSON object per line). A small converter is
-needed in between:
+The Lean bridge applies certified checkers to the attack prompts from a real
+garak scan. You run garak yourself on your own machine — the scan depends on your
+model access, your chosen probes, and your run, so the report it produces is
+yours, not something shipped with this repository. The repository provides the
+tooling that consumes that report.
+
+The flow:
 
 ```
-garak scan → report.jsonl → [report_to_trace.py] → trace.json → apply.lean
+garak scan  →  report.jsonl  →  report_to_trace.py  →  trace.json  →  apply.lean
+             (garak's output)    (converter, in repo)                 (verdicts)
 ```
 
-Build the converter against the real field names in your `report.jsonl` (inspect
-a couple of lines first), then:
+### 1. Run a garak scan (on your machine)
 
 ```
-python report_to_trace.py garak.<id>.report.jsonl > trace.json
-lake env lean --run Bridge/apply.lean --trace trace.json <spec>.json
+garak --model_type huggingface --model_name gpt2 --probes atkgen
+```
+
+garak writes a report to its run directory, for example
+`~/.local/share/garak/garak_runs/garak.<id>.report.jsonl` (on Windows,
+`C:\Users\<you>\.local\share\garak\garak_runs\`). This file is one JSON object
+per line, recording the attacks garak sent.
+
+### 2. Convert the report to a trace
+
+`apply.lean` reads a trace shaped as `{"turns": [{"attackerPrompt": "..."}, ...]}`,
+not garak's native `report.jsonl`. `Bridge/report_to_trace.py` bridges the two:
+it reads the report, extracts each attack prompt, and writes the trace.
+
+```
+python Bridge/report_to_trace.py garak.<id>.report.jsonl -o trace.json
+```
+
+(If a report yields no prompts — garak's field names vary by version and probe —
+re-run with `--debug` to see the keys present in the report.)
+
+### 3. Apply certified checkers to the scanned prompts
+
+```
+lake env lean --run Bridge/apply.lean --trace trace.json Bridge/examples/prompt_injection.json
+```
+
+This prints a `BLOCKED` / `ALLOWED` verdict for each prompt from the scan, using
+the certified checker(s) you pass. Checkers are composed by OR: a prompt is
+blocked if any checker fires. Pass more than one spec to apply several at once.
+
+This is the end-to-end proof of concept: a garak run surfaces attack prompts, and
+the Lean layer applies machine-checked guardrails to them.
 ```
