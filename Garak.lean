@@ -7,5 +7,3 @@ import Garak.keywordChecker
 import Garak.Impossibility
 import Garak.Survival
 import Garak.Process
-import Garak.Theorems2
-import Garak.Theorem3
