@@ -88,10 +88,10 @@ theorem lemma6 (P : Measure Ω) [IsProbabilityMeasure P] (ℱ : Filtration ℕ m
       P.real (B a) * Real.exp (-∑ t ∈ Finset.Ico a n, q t) := by
     intro n
     refine mul_le_mul_of_nonneg_left ?_ measureReal_nonneg
-        rw [← Finset.sum_neg_distrib, Real.exp_sum]
-        exact Finset.prod_le_prod
-      (fun t ht => by have h := hq1 t (Finset.mem_Ico.mp ht).1; linarith)
-      (fun t _ => Real.one_sub_le_exp_neg (q t))
+    rw [← Finset.sum_neg_distrib, Real.exp_sum]
+    gcongr with t ht
+    · exact fun t ht => by linarith [hq1 t (Finset.mem_Ico.mp ht).1]
+    · exact Real.one_sub_le_exp_neg (q t)
   refine ⟨fun n hn => ⟨hprod n hn, hexp n⟩, fun hdiv => ?_⟩
   have hlim : Tendsto (fun n => Real.exp (-∑ t ∈ Finset.Ico a n, q t)) atTop (𝓝 0) :=
     Real.tendsto_exp_neg_atTop_nhds_zero.comp hdiv
@@ -162,7 +162,7 @@ lemma survival_ineq {κ : Type*} [Fintype κ] (P : Measure Ω) [IsProbabilityMea
   have h_ae : Bt1.indicator (fun _ => (1 : ℝ)) ≤ᵐ[P] f - f * g := by
     filter_upwards [h1.remediation t, h1.retention t] with ω hrem hret
     simp only [hfdef, hgdef, hBt1def, hBtdef, hZxdef, Pi.sub_apply, Pi.mul_apply,
-      Set.indicator_apply, Set.mem_setOf_eq]
+      Set.indicator_apply]
     by_cases hB : x ∈ D t ω
     · have : x ∈ D (t + 1) ω := hret hB
       simp [hB, this]
@@ -178,12 +178,12 @@ lemma survival_ineq {κ : Type*} [Fintype κ] (P : Measure Ω) [IsProbabilityMea
   filter_upwards [h_mono, h_sub, h_fg, h19 t ht, hq t ht] with ω hm hs hfg h19ω hqω
   refine hm.trans ?_
   rw [hs, Pi.sub_apply, h_f, hfg, Pi.mul_apply]
-  simp only [hfdef, Set.indicator_apply, hBtdef, Set.mem_setOf_eq]
+  simp only [hfdef, Set.indicator_apply, hBtdef]
   by_cases hB : x ∈ D t ω
   · simp [hB]
   · have hres : x ∈ activeResidual Xs D t ω := ⟨hadm t ht, hB⟩
     have := (hqω hres).trans (h19ω hres)
-    simp only [hB, not_false_eq_true, if_true, one_mul]
+    simp [hB]
     linarith
 
 /-- **Theorem 7** (for an attack that is active from round `a` on). Suppose Assumption 1 holds,
@@ -217,8 +217,9 @@ theorem theorem7_of_active {κ : Type*} [Fintype κ] (P : Measure Ω) [IsProbabi
     have hae : ∀ᵐ ω ∂P, ω ∉ ⋂ n, ⋂ (_ : a ≤ n), B n := measure_eq_zero_iff_ae_notMem.mp hnull
     have hret : ∀ᵐ ω ∂P, ∀ t, D t ω ⊆ D (t + 1) ω := ae_all_iff.mpr h1.retention
     filter_upwards [hae, hret] with ω hω hr
-    simp only [Set.mem_iInter, not_forall, hBdef, Set.mem_setOf_eq, not_not] at hω
+    simp only [Set.mem_iInter, not_forall, hBdef] at hω
     obtain ⟨n, -, hn⟩ := hω
+    replace hn : x ∈ D n ω := by simpa using hn
     refine ⟨n, fun t ht => ?_⟩
     induction t, ht using Nat.le_induction with
     | base => exact hn
@@ -227,7 +228,8 @@ theorem theorem7_of_active {κ : Type*} [Fintype κ] (P : Measure Ω) [IsProbabi
 /-- **Theorem 7.** Let the active surfaces `X_t` be nondecreasing and let `x` be admitted at some
 round, with admission time `a(x)`. Suppose Assumption 1 holds, the discovery probability for `x`
 satisfies (19), and `q_t(x) ≤ 1` is a lower bound for the right-hand side of (19) on
-`{x ∈ V_t}` (non-negativity of `q_t(x)` is not needed). Then for `n ≥ a(x)`, `P(x ∉ D_n) ≤ ∏_{t=a(x)}^{n-1} (1 - q_t(x))` (Eq. (20)), and
+`{x ∈ V_t}` (non-negativity of `q_t(x)` is not needed). Then for `n ≥ a(x)`,
+`P(x ∉ D_n) ≤ ∏_{t=a(x)}^{n-1} (1 - q_t(x))` (Eq. (20)), and
 `∑_{t ≥ a(x)} q_t(x) = ∞` implies eventual permanent coverage of `x` almost surely. -/
 theorem theorem7 {κ : Type*} [Fintype κ] (P : Measure Ω) [IsProbabilityMeasure P]
     (ℱ : Filtration ℕ m0) (Xs : ℕ → Set α) (D Z : ℕ → Ω → Set α)
