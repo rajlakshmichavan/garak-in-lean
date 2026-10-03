@@ -89,12 +89,9 @@ theorem lemma6 (P : Measure Ω) [IsProbabilityMeasure P] (ℱ : Filtration ℕ m
     intro n
     refine mul_le_mul_of_nonneg_left ?_ measureReal_nonneg
     rw [← Finset.sum_neg_distrib, Real.exp_sum]
-      apply Finset.prod_le_prod
-    · intro t ht
-      have := hq1 t (Finset.mem_Ico.mp ht).1
-      linarith
-    · intro t _
-      exact Real.one_sub_le_exp_neg (q t)
+        exact Finset.prod_le_prod
+      (fun t ht => by have h := hq1 t (Finset.mem_Ico.mp ht).1; linarith)
+      (fun t _ => Real.one_sub_le_exp_neg (q t))
   refine ⟨fun n hn => ⟨hprod n hn, hexp n⟩, fun hdiv => ?_⟩
   have hlim : Tendsto (fun n => Real.exp (-∑ t ∈ Finset.Ico a n, q t)) atTop (𝓝 0) :=
     Real.tendsto_exp_neg_atTop_nhds_zero.comp hdiv
