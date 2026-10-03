@@ -88,7 +88,7 @@ theorem lemma6 (P : Measure Ω) [IsProbabilityMeasure P] (ℱ : Filtration ℕ m
       P.real (B a) * Real.exp (-∑ t ∈ Finset.Ico a n, q t) := by
     intro n
     refine mul_le_mul_of_nonneg_left ?_ measureReal_nonneg
-    rw [← Finset.sum_neg_distrib, Real.exp_sum]
+        rw [← Finset.sum_neg_distrib, Real.exp_sum]
         exact Finset.prod_le_prod
       (fun t ht => by have h := hq1 t (Finset.mem_Ico.mp ht).1; linarith)
       (fun t _ => Real.one_sub_le_exp_neg (q t))
