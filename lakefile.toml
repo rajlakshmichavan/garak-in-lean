@@ -1,7 +1,7 @@
 name = "Garak"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["Garak"]
+defaultTargets = ["Garak", "Proofs"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -16,3 +16,6 @@ scope = "leanprover-community"
 
 [[lean_lib]]
 name = "Garak"
+
+[[lean_lib]]
+name = "Proofs"

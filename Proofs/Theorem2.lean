@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.Theorem5
+public import Proofs.Theorem5
 
 /-!
 # Theorem 2: complete coverage of a finite attack surface
