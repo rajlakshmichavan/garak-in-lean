@@ -261,7 +261,7 @@ theorem theorem5 {m : ℕ} (P : Measure Ω) [IsProbabilityMeasure P]
   · -- almost-sure completion
     rw [ae_iff]
     simp only [not_lt, top_le_iff]
-    apply le_antisymm _ (zero_le _)
+    apply le_antisymm _ (zero_le')
     have hlim : Filter.Tendsto (fun t : ℕ => ∑ i, ENNReal.ofReal ((1 - η i) ^ t))
         Filter.atTop (nhds 0) := by
       rw [show (0 : ℝ≥0∞) = ∑ _i : Fin m, ENNReal.ofReal 0 by simp]
