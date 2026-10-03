@@ -1,81 +1,64 @@
-# Garak in Lean
-
-This repository is a Lean 4 formalization of ideas from
-[garak](https://github.com/NVIDIA/garak), an LLM vulnerability scanner. It models
-the pieces of a scanner as checked mathematical objects: prompts, probes,
-responses, detectors, guardrail checkers, adaptive attack generation, and the
-properties we would like those components to satisfy.
-
-The goal is to make claims about scanner behavior precise enough that Lean
-can type-check the definitions and verify the proofs.
-
-## What Is Modeled
-
-- `Probe`, `Response`, `Turn`, and `Conversation` model scanner interactions.
-- `Detector` models a detector that scores model responses.
-- `Checker` models a guardrail that either blocks or allows prompts.
-- `AtkgenStrategy` models an adaptive attack generator that chooses the next
-  probe from conversation history.
-- `Complete`, `Sound`, and `EventuallyTriggers` state scanner properties as
-  Lean propositions.
-
 ## Repository Layout
 
-```text
-Garak/
-  Types.lean          Core data structures for probes, responses, and conversations
-  Detector.lean       Detector scores and detector specifications
-  Checker.lean        Prompt policies, checker soundness, and completeness
-  Atkgen.lean         Adaptive attack generation over conversations
-  Theorems.lean       Proved properties about conversations and triggering
-  Impossibility.lean  Pigeonhole-style results
-  keywordChecker.lean Small keyword-checker example and evasion proof
-  Basic.lean          Minimal starter module
-Garak.lean            Library entry point
-demo.lean             Walkthrough file
-lakefile.toml         Lake project configuration
-lean-toolchain        Lean version pin
-```
+The repository has three parts. Each folder has its own README with the full
+file-by-file detail; this is the overview.
 
-## Claims
-
-The project already proves several small but useful facts:
-
-- Running an attack conversation for `0` turns produces an empty conversation.
-- Running for `n` turns produces exactly `n` turns.
-- If a detector fires at some turn within `maxTurns`, then
-  `EventuallyTriggers` holds.
-- A finite signatures argument: if there are more adversarial prompts than
-  signatures, some adversarial prompt is uncaught.
-- A toy keyword checker misses a paraphrased harmful prompt, so it is not
-  complete for the demo policy.
-
-## How This Lean Layer Fits With garak
-
-garak remains the executable scanner. This Lean project is a specification and
-proof layer that can sit beside garak and make parts of its behavior precise.
-In a normal garak run, garak selects probe and detector plugins, runs probes
-against a model generator through a harness, and evaluates the detector results.
-This repository abstracts that flow into Lean definitions that can be reasoned
-about formally.
-
-| garak concept | Lean model in this repo | Role |
+| Folder | What it is | Details |
 | --- | --- | --- |
-| Probe plugin | `Probe` and `AtkgenStrategy` | Generates prompts or chooses the next probe |
-| Model output | `Response` | Represents the generator's reply |
-| Detector plugin | `Detector` | Scores or specifies whether a response shows a failure mode |
-| Harness run | `runConversation` | Builds a conversation over a fixed number of turns |
-| Guardrail or filter | `Checker` | Blocks or allows prompts according to a policy |
-| Evaluation claim | `Complete`, `Sound`, `EventuallyTriggers` | States what should be true about the scan |
+| `Garak/` | The scanner model (types, detectors, attack generation) and the checker / impossibility results — the static picture the paper contrasts against. | [`Garak/README.md`](Garak/README.md) |
+| `Proofs/` | The paper's probabilistic coverage theorems (2, 3, 5, 7 and Lemma 6) — the mathematical core. | [`Proofs/README.md`](Proofs/README.md) |
+| `Bridge/` | Runtime tooling: certify a checker spec, apply certified checkers to prompts, drive LLM-in-the-loop synthesis — the runnable proof-of-concept. | [`Bridge/README.md`](Bridge/README.md) |
 
-A practical integration path would look like this:
+`Garak.lean` is the build root, `demo.lean` is a scratchpad (never imported, and it
+contains intentionally false statements), and `lakefile.toml` / `lean-toolchain` /
+`lake-manifest.json` hold the Lake config, the Lean version pin, and the Mathlib lock.
 
-1. Model the intended behavior of a garak probe, detector, checker, or harness
-   as Lean definitions.
-2. Prove invariants about that model, such as conversation length, detector
-   triggering, checker completeness, or known evasion cases.
-3. Implement or update the corresponding garak Python plugin using those Lean
-   definitions as a design contract.
-4. Export selected garak scan traces into a simple format, such as JSON, and map
-   them back to Lean values like `Conversation`, `Turn`, `Probe`, and `Response`
-   for replay or proof-driven analysis.
+### How the pieces fit together
+
+- The `Proofs/` theorems establish, in the abstract, when continued discovery and
+  repair guarantee coverage.
+- The `Garak/` checker and impossibility results show why feedback is needed: no
+  fixed checker is complete.
+- The `Bridge/` layer connects the two to practice: a garak run produces attack
+  prompts, and the Lean bridge certifies and applies checkers against them.
+
+## Running This Yourself
+
+garak and the Lean proofs both run locally. The two steps are independent, and
+garak comes first.
+
+1. **Install and run garak.** garak is NVIDIA's LLM vulnerability scanner. Install
+   it with `pip install -U garak`, then run a scan, e.g.
+   `garak --model_type huggingface --model_name gpt2 --probes atkgen`. This writes a
+   report of attack attempts to garak's run directory.
+2. **Install Lean and build the proofs.** Install Lean through `elan`, then from the
+   repository root run `lake exe cache get` (downloads prebuilt Mathlib) and
+   `lake build`. The first build takes a while; afterwards it is cached.
+3. **Run the bridge on a real scan.** See [`Bridge/README.md`](Bridge/README.md) for
+   certifying a checker and applying it to prompts from a garak run.
+
+Both steps are local because garak needs your own model access and the Lean build
+needs Mathlib downloaded to your machine.
+
+## Notes for AI Agents
+
+If you are an LLM or coding agent working in this repository, read this first.
+
+- **Two independent parts.** `Garak/` + `Proofs/` are Lean proofs (need Mathlib,
+  built via `lake build`). `Bridge/` is runtime tooling and does not need the proofs
+  to run. Know which one a task touches.
+- **Never introduce `sorry`.** If a proof cannot be closed, stop and say so. Do not
+  weaken a theorem's statement (its hypotheses or conclusion) to make it compile —
+  that changes what is claimed. Flag it instead.
+- **Mathlib names drift between versions.** If a lemma name is wrong, fix the name;
+  do not replace a real proof with `sorry` or `admit`.
+- **A clean build is not a full check.** After `lake build`, audit axioms
+  (`#print axioms`); `sorryAx` means an unfinished proof, `Lean.ofReduceBool` means
+  `native_decide` was used (expected only in `keywordChecker`).
+- **`demo.lean` contains intentionally false statements** for teaching. Never import
+  it, and never cite it as a result.
+- **The bridge certifies samples, not universal correctness.** `verify.lean`
+  certifies `CorrectOn` on the declared samples only — not `Sound`/`Complete` over
+  all prompts. Don't overstate it.
+- **Claims must match reality.** "Proved" means Lean checked it with no `sorry`. If
+  something hasn't built, say "written, not yet verified." Don't upgrade that.
