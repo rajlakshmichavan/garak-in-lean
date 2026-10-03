@@ -1,3 +1,9 @@
+# garak-in-lean
+
+![Build](https://github.com/rajlakshmichavan/garak-in-lean/actions/workflows/lean.yml/badge.svg)
+
+A machine-checkable verification layer in Lean on top of the garak LLM scanner, with Lean-verified proofs of the coverage theorems from *Defensive Sufficiency in a Stackelberg Model of AI Security*.
+
 ## Repository Layout
 
 The repository has three parts. Each folder has its own README with the full
