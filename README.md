@@ -2,7 +2,7 @@
 
 ![Build](https://github.com/rajlakshmichavan/garak-in-lean/actions/workflows/lean.yml/badge.svg)
 
-[![arXiv](https://img.shields.io/badge/arXiv-XXXX.XXXXX-b31b1b.svg)](https://arxiv.org/abs/2610.09892)
+[![arXiv](https://img.shields.io/badge/arXiv-2610.09892-b31b1b.svg)](https://arxiv.org/abs/2610.09892)
 
 Paper: [*Defensive Sufficiency in a Stackelberg Model of AI Security*](https://arxiv.org/abs/2610.09892)
 
