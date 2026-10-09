@@ -2,6 +2,10 @@
 
 ![Build](https://github.com/rajlakshmichavan/garak-in-lean/actions/workflows/lean.yml/badge.svg)
 
+[![arXiv](https://img.shields.io/badge/arXiv-XXXX.XXXXX-b31b1b.svg)](https://arxiv.org/abs/2610.09892)
+
+Paper: [*Defensive Sufficiency in a Stackelberg Model of AI Security*](https://arxiv.org/abs/2610.09892)
+
 A machine-checkable verification layer in Lean on top of the garak LLM scanner, with Lean-verified proofs of the coverage theorems from *Defensive Sufficiency in a Stackelberg Model of AI Security*.
 
 ## Repository Layout
